@@ -11,8 +11,8 @@
 ## 1. Context and Problem Statement
 
 ### 1.1 Background & Problem Context
-在 DeepSeek Harness 多智能体协作链路中，任务通常通过单播调用派发或者通过创建同级会话指派。然而在既有通信实现中，两处关键的收敛与回传环节存在语义断裂：
-1. 初始任务来源标识丢失：当发起方通过 `session_create` 并传入 `initial_message` 创建同级会话时，底层组装的初始消息仅包含黑板条目引用行与原始输入正文，未注入包含创建方会话编号与 CallType 为 task_dispatch 的传输层客观报头。新建会话在处理完任务后，无法获知应当向哪个会话回传 task_report，导致成果无法按契约回传给发起方。
+在 DeepSeek Harness 多智能体协作链路中，任务通常通过单播调用派发或者通过创建同级会话指派。然而在既有通信实现中，两处关键的收敛与闭环环节存在语义断裂：
+1. 初始任务来源标识丢失：当发起方通过 `session_create` 并传入 `initial_message` 创建同级会话时，底层组装的初始消息仅包含黑板条目引用行与原始输入正文，未注入包含创建方会话编号与 CallType 为 task_dispatch 的传输层客观报头。新建会话在处理完任务后，无法获知应当向哪个会话回传 task_report，导致成果无法按契约向发起方收口。
 2. 工具出参缺失收敛预期：当发起方调用 `session_call` 派发任务或调用 `session_create` 启动同级会话时，工具返回值仅陈述了单播管道与进程物理状态，缺乏非指令性的客观收敛预期说明，容易导致调用方模型在任务派发后误以为必须立即发起高频状态轮询。
 
 ### 1.2 Architectural Forces & Constraints
@@ -59,7 +59,7 @@
 ### 4.2 出参规约
 在 `lib/locales/zh.mjs` 与 `lib/locales/en.mjs` 的 `sessionCallSuccess` 与 `sessionCreateSuccess` 中追加客观收敛说明：
 - `session_call(task_dispatch)`: 追加已派发任务等待目标回传，无需重复轮询。
-- `session_call(task_report)`: 追加已完成任务的回传汇报，无需回复。
+- `session_call(task_report)`: 追加已完成收口汇报，无需回复。
 - `session_call(notice)`: 追加单向通报阅后即止，无需回复。
 - `session_create`: 若包含初始任务则追加初始任务已派发等待目标回传，未包含则提示就绪待命。
 
@@ -68,7 +68,7 @@
 ## 5. Consequences
 
 ### 5.1 Positive Consequences
-- **协作往返确定性**: 新建同级会话处理完任务后，可精准定位发件人并以单次 `task_report` 结束。
+- **协作闭环确定性**: 新建同级会话处理完任务后，可精准定位发件人并以单次 `task_report` 收口。
 - **遏制无效轮询**: 调用方模型在派发任务后明确获得等待回传预期，避免发起无意义的 `session_query`。
 - **原语高度复用**: 消除引导层与传输层的逻辑分支漂移。
 

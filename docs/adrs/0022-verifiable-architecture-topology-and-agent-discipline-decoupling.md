@@ -12,7 +12,7 @@
 
 ### 1.1 Background & Problem Context
 
-随着 `dsh-call-session` 演进为覆盖前端画布、进程内单播分发、公共黑板状态存储与宿主会话调度的多子系统架构，团队需要对全局拓扑进行全流程可视化与架构归档。在此过程中暴露出两项结构性阻抗：
+随着 `dsh-call-session` 演进为覆盖前端画布、进程内单播分发、公共黑板状态存储与宿主会话调度的多子系统架构，团队需要对全局拓扑进行端到端可视化与架构归档。在此过程中暴露出两项结构性阻抗：
 
 1. **预提交门禁目录白名单过于死板**：
    `.githooks/pre-commit` 此前配置了仅放行 `docs/(adrs/|agents/|README.md)` 的硬性白名单。由 Archify 生成的可验证架构规范文件与离线交互式 HTML 交付物缺少合法存放路径，导致提交被门禁无条件拦截。
@@ -31,7 +31,7 @@
 
 - **Driver 1 (Legitimate Architecture Asset Ingestion)**：在 `docs/architecture/` 下合法收容机器可验证的架构源定义与交互式单文件 HTML 交付物。
 - **Driver 2 (Automated Pre-Commit Whitelist Alignment)**：修正 `.githooks/pre-commit` 白名单正则，在保持严格防御的同时放行架构目录。
-- **Driver 3 (Context Load Realignment for Agent Discipline)**：将冷峻客观、纯文本无括号注解、四字子标题、与 `CONTEXT.md` 词条保持一致等运行态纪律由 `ADR-0009` 正式提炼并记录至根目录 `AGENTS.md`，确保每轮推演无条件生效。
+- **Driver 3 (Context Load Realignment for Agent Discipline)**：将冷峻客观、纯文本无括号注解、四字子标题、对齐 `CONTEXT.md` 等运行态纪律由 `ADR-0009` 正式提炼沉淀至根目录 `AGENTS.md`，确保每轮推演无条件生效。
 - **Driver 4 (Historical Evidence Separation)**：明确 `docs/adrs/` 纯粹作为架构决策历史档案，消除“试图以 ADR 约束 LLM 交互”的认知偏差。
 
 ---
@@ -46,7 +46,7 @@
 - **Pros**: 无需调整 `AGENTS.md`。
 - **Cons**: 严重消耗上下文 Token（Context Load 膨胀），引发额外文件读取时延，且容易因注意力稀释导致执行不稳定。
 
-### Option 3 (Chosen): 预提交白名单放行架构目录 + 运行态纪律记录至 `AGENTS.md`
+### Option 3 (Chosen): 预提交白名单放行架构目录 + 运行态纪律沉淀至 `AGENTS.md`
 - **Pros**:
   - 架构资产具备完整的 Git 版本追踪与 Showcase 门禁保障。
   - 临时副作用通过 `.gitignore` 干净隔离。

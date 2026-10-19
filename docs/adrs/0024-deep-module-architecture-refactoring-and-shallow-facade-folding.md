@@ -71,7 +71,7 @@
 
 #### 支柱 2：SessionDirectory 查询折叠与浅层门面收拢 (lib/session-directory.mjs)
 - `SessionDirectory` 新增 `.query(args, exec)` 原生实例方法与 `executeSessionQuery` 顶层导出，原生封装入参规范化、作用域隔离、归档过滤与状态汇总。
-- `lib/session-query.mjs` 彻底折叠为自 `session-directory.mjs` 的转发重导出，实现删除测试中的逻辑收敛，消除双重跳转。
+- `lib/session-query.mjs` 彻底折叠为自 `session-directory.mjs` 的转发重导出，实现删除测试中的逻辑收口，消除双重跳转。
 
 #### 支柱 3：BoardStore 存储纯化与 BoardToolsAdapter 门面解耦 (lib/board-store.mjs)
 - `BoardStore` 纯化为仅关注内存 Map、FIFO 淘汰、原子防抖落盘与备份恢复的纯存储引擎。

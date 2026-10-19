@@ -37,23 +37,23 @@
 
 ## Implementation Decisions
 
-### 1. 两级钻取状态机与架构定位
+### 钻取架构
 
 功能完全收敛在插件客户端输入源契约中，命名为 peer-session，触发字符为 @，排序权重配置为 5。
 - 一级未下钻状态：仅输出工作区目录，声明 drill 为 true，图元为文件夹，分组为本地化工作区词条；
 - 二级已下钻状态：按目标工程目录展开扁平列表，不设微小节微分类，保持单层结构；
 - 层级导航条契约：下钻后顶栏发布两级导航条，激活根节点重置为一级列表。
 
-### 2. 子会话与归档多维清洗断言
+### 会话清洗
 
 彻底剔除两类非协同实体：
-- 严格过滤子会话：断言来源为 subagent、具备 parentSession 或 parentId 关联引用、delegationDepth 大于 0、或标题包含 implementer subagent 等内部特征的会话直接忽略；
+- 严格过滤子会话：断言来源为 subagent、具备 parentSession 或 parentId 关联引用、delegationDepth 大于 0、或标题包含 subagent 等内部特征的会话直接忽略；
 - 严格过滤归档会话：断言标记为 archived 或状态为 archived、dismissed、deleted 的会话直接忽略。
 
-### 3. 两级确定性排序契约
+### 排序契约
 
 二级展开时严格按照两级逻辑排序：
-- 第一优先级：检查调用遥测与黑板存储，凡参与过单播调用呼入呼出、发布过黑板条目、或由同级工厂创建的会话集合判定为已注册，优先置首；
+- 第一优先级：检查调用连线记录与黑板存储，凡参与过单播调用呼入呼出、发布过黑板条目、或由同级工厂创建的会话集合判定为已注册，优先置首；
 - 第二优先级：按会话原生 updatedAt 或 createdAt 降序排列。
 
 ```typescript
@@ -64,12 +64,12 @@ interface PeerCandidateSortingModel {
 }
 ```
 
-### 4. 零越界不变式与纯切片交付
+### 零越界
 
-- 看板零连线不变式：全流程中 activeCalls 严格恒等于 0，不向遥测缓冲区写入调用记录，不向黑板写入数据；
+- 看板零连线不变式：全流程中 activeCalls 严格恒等于 0，不向环形缓冲区写入调用记录，不向黑板写入数据；
 - 纯切片不变式：输出标准规范 dsh-session 引用，由底层原生预处理服务解码并以只读方式注入 Referenced sessions，绝不跨越插件边界探测宿主私有对象。
 
-### 5. 确定性界面刷新性能指标
+### 性能指标
 
 遵循 ADR-0020 资源预算规范：
 - 一级工作区发现与过滤延迟 P99 小于等于 2 毫秒；
@@ -79,7 +79,7 @@ interface PeerCandidateSortingModel {
 
 ## Testing Decisions
 
-### 1. 测试质量标准
+### 质量标准
 
 测试严格面向外部可观测行为，运行于 Node VM 沙箱隔离环境中。测试必须验证：
 - 一级菜单仅包含工作区条目，零会话暴露；
@@ -88,7 +88,7 @@ interface PeerCandidateSortingModel {
 - 8 位规范短 ID 徽标格式固定为井号加 8 位小写字母数字；
 - 协作看板调用连线计数在全流程中严格恒等于 0。
 
-### 2. 测试模块与基准参考
+### 测试模块
 
 - 测试文件：tests/peer-session-reference.test.mjs；
 - 参考 tests/helpers/canvas-harness.mjs 中的沙箱模块加载器与上下文隔离机制。

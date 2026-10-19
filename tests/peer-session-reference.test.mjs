@@ -441,6 +441,19 @@ test('Peer Session Reference: Breadcrumb navigation, root switching, and workspa
   assert.equal(wsVal.kind, 'workspace');
   assert.equal(wsVal.path, CURRENT_WS);
 
+  // 验证搜索词输入时面包屑名称不被过滤词污染
+  const headerWithQuery = src.header({ sessionId: 'session-curr' }, { query: CURRENT_WS + ' 过滤关键词', drilled: true });
+  assert.ok(Array.isArray(headerWithQuery));
+  assert.equal(headerWithQuery[1].label, 'dsh-call-session', 'Breadcrumb must remain workspace name without query filter text');
+
+  // 点击或回车选定工作区：无论 action 为 pick 还是 drill 均触发下钻
+  const clickPick = src.onPick({
+    action: 'pick',
+    candidate: header[1]
+  });
+  assert.equal(clickPick.text, '@' + CURRENT_WS);
+  assert.equal(clickPick.continue, true);
+
   // 点击面包屑根节点：返回 @ 且 continue: true 切回一级工作区列表
   const rootPick = src.onPick({
     action: 'drill',

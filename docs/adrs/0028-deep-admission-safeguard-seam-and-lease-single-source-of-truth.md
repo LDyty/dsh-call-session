@@ -57,7 +57,7 @@
 
 `PeerSessionFactory.prototype.create` 移除外层散落的目录扫描与在途合并代码，统一通过 `lease.title` 与 `lease.generation` 编排根代理创建、标题事件追加与启动协同通知。成功时提交租约，异常时原子回滚租约。
 
-### 基语一致
+### 基语对齐
 
 锐化 `准入租约 / Admission Lease` 词条定义，确立其原子交付规范标题与继承代际的事务契约职责。
 

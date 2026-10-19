@@ -79,7 +79,7 @@
    - 目标为 `running`：使用 `targetAgent.steer(userMessage)` 在单步决策边界注入；
 5. **Invariant 5 (Clean Transport Pipe & Zero Auto-ACK)**：
    - 插件仅作为进程内通信传输管道，不承担上层业务编排职责；
-   - 禁止在插件底层引入自动确认（Auto-ACK）、自动回音或轮询守护；通信何时回复、何时结束，由双方模型依据类别语义与业务上下文自主决断；
+   - 禁止在插件底层引入自动确认（Auto-ACK）、自动回音或轮询守护；通信何时回复、何时收口，由双方模型依据类别语义与业务上下文自主决断；
 6. **Invariant 6 (Graceful Degradation)**：
    - 当发件人 `callerSessionId` 或标题缺失时，报头降级为默认占位标识（如 `unknown-caller` 与默认标题），避免调用中断。
 
@@ -137,7 +137,7 @@
 | 呼叫意图 (`call_type`) | 语义定位 | 交互结束规则 (Convergence Rule) |
 |---|---|---|
 | `task_dispatch` | 任务派发、行动建议或前置请求 | 接收方处理后，仅在需要回传产物或结论时以单次 `task_report` 答复；无需返回结果则不回复。 |
-| `task_report` | 任务结果汇报、产物交付或答复 | 表示当前协作单元已结束。发起方接收后归档，无需回复。 |
+| `task_report` | 任务结果汇报、产物交付或答复 | 表示当前协作单元已收口。发起方接收后归档，无需回复。 |
 | `notice` | 单向状态通报或客观知悉 | 纯通知属性，阅后即止，接收方不调用 `session_call` 发起回复。 |
 
 ---
