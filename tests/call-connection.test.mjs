@@ -354,8 +354,8 @@ test('Prompt KV Cache 防御与工具集物理隔离 (ADR-0012 Invariant 4 & Gat
   assert.ok(!registeredTools.has('call_telemetry'), '禁止将 call_telemetry 暴露为大模型工具');
   assert.ok(!registeredTools.has('canvas_telemetry'), '禁止将 canvas_telemetry 暴露为大模型工具');
 
-  // 仅标准协作原语存在
-  const allowedTools = ['board_post', 'board_list', 'board_clear', 'session_call', 'session_query', 'session_create'];
+  // 仅标准协作原语存在（session_create 默认关闭，不进入默认工具集）
+  const allowedTools = ['board_post', 'board_list', 'board_clear', 'session_call', 'session_query'];
   for (const name of registeredTools.keys()) {
     assert.ok(allowedTools.includes(name), `工具 ${name} 不属于允许的 LLM 原生工具集`);
   }

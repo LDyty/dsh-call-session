@@ -9,18 +9,21 @@ import {
   normalizeWorkspace
 } from '../lib/board-store.mjs';
 import {
-  executeSessionCreate,
+  executeSessionCreate as executeSessionCreateRaw,
   resolvePeerTitle,
   resetRateLimits,
   checkRateLimit,
   PEER_SESSION_CONSTANTS
 } from '../lib/session-create.mjs';
+import { withSessionCreateEnabled } from './helpers/session-create-opt-in.mjs';
 import {
   executeSessionCall,
   dispatchNativeMessage
 } from '../lib/session-call.mjs';
 import { apply } from '../index.mjs';
 import { createMockAgent } from './helpers/mock-agent.mjs';
+
+const executeSessionCreate = withSessionCreateEnabled(executeSessionCreateRaw);
 
 function createTempDir() {
   return fs.mkdtemp(path.join(os.tmpdir(), 'dsh-e2e-adv-'));
@@ -464,7 +467,8 @@ test('端到端全链路联动：创建同级会话、黑板任务派发、记�
     enabled: true,
     storagePath: path.join(tmpDir, 'board.json'),
     debounceMs: 50,
-    locale: 'zh'
+    locale: 'zh',
+    allowSessionCreate: true
   });
 
   const remindContext = ctx._contexts.get('board:remind');

@@ -20,6 +20,9 @@
       name: dsh-call-session
       config:
         enabled: true
+        # Sessions cannot create new sessions by default; only the user creates sessions.
+        # Set true only when agent-initiated peer session creation is explicitly wanted.
+        allowSessionCreate: false
         # Debounce delay in ms for atomic blackboard flush (default: 300)
         debounceMs: 300
         # Maximum posts retained in blackboard memory (default: 200)

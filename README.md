@@ -93,12 +93,12 @@ User prompt:
 
 The agent calls `board_post` to store the detailed report on the blackboard and obtain a `postId`. Other sessions retrieve the content on demand via `board_list`, preventing context window explosion.
 
-### Create Session
+### Create Session (opt-in)
 
 User prompt:
 > Create a new session and hand off tasks.
 
-The agent calls `session_create` to spawn a long-running peer session in the current workspace, automatically inheriting model specifications and presets.
+Sessions cannot create sessions by default: `session_create` is not registered, and the system prompt tells the agent that only the user creates sessions. Deployments that explicitly want agent-initiated peer sessions can set `allowSessionCreate: true`. With it enabled, the agent calls `session_create` to spawn a long-running peer session in the current workspace, automatically inheriting model specifications and presets.
 
 ### Reference Session
 
@@ -115,7 +115,7 @@ Naming the session in plain words reaches the same place:
 | Tool | Type | Mode | Common Use Case |
 | :--- | :--- | :--- | :--- |
 | `session_call` | Tool | Push | 1:1 unicast call for task dispatch, progress reporting, and handoffs |
-| `session_create` | Tool | Native | Create long-running peer sessions for parallel multi-role collaboration |
+| `session_create` | Tool | Opt-in | Create long-running peer sessions for parallel multi-role collaboration; disabled unless `allowSessionCreate: true` |
 | `session_query` | Tool | Read-only | List sessions and check active/idle statuses in or across workspaces |
 | `board_post` | Tool | Pull | Publish blackboard entries for large artifacts and shared milestones |
 | `board_list` | Tool | Pull | Query blackboard records by ID, topic, or digest mode |
@@ -151,6 +151,7 @@ To customize, add property overrides to `~/.dsh/profiles/web/cordis.patch.yml`:
 
 Options:
 - `enabled`: boolean, default `true`. Enable or disable plugin tools.
+- `allowSessionCreate`: boolean, default `false`. Register the `session_create` tool and allow sessions to create new sessions. When `false` (default), only the user creates sessions; `session_call` to a missing target returns "session does not exist" guidance instead.
 - `debounceMs`: number, default `300`. Atomic disk write debounce delay in milliseconds.
 - `maxCapacity`: number, default `200`. Maximum board entries.
 - `telemetryCapacity`: number, default `200`. Maximum call traces retained in canvas data buffer.

@@ -1,14 +1,17 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  executeSessionCreate,
+  executeSessionCreate as executeSessionCreateRaw,
   resolvePeerTitle,
   resetRateLimits,
   checkRateLimit,
   inspectWorkspaceActiveSessions,
   PEER_SESSION_CONSTANTS
 } from '../lib/session-create.mjs';
+import { withSessionCreateEnabled } from './helpers/session-create-opt-in.mjs';
 import { createMockAgent, silentLogger } from './helpers/mock-agent.mjs';
+
+const executeSessionCreate = withSessionCreateEnabled(executeSessionCreateRaw);
 
 
 function createMockCtx({

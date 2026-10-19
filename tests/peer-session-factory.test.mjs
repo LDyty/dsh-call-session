@@ -3,10 +3,13 @@ import assert from 'node:assert/strict';
 import {
   PeerSessionFactory,
   PEER_SESSION_CONSTANTS,
-  executeSessionCreate
+  executeSessionCreate as executeSessionCreateRaw
 } from '../lib/session-create.mjs';
+import { withSessionCreateEnabled } from './helpers/session-create-opt-in.mjs';
 import { createMockAgent } from './helpers/mock-agent.mjs';
 import { createMockEnvironment } from './helpers/mock-host.mjs';
+
+const executeSessionCreate = withSessionCreateEnabled(executeSessionCreateRaw);
 
 test('同级会话生命周期与创建契约：初始化、标题推导与选项解析', async () => {
   PeerSessionFactory.reset();

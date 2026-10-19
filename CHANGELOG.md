@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- **Sessions no longer create sessions by default (`allowSessionCreate`, default `false`)**:
+  - `session_create` is only registered when `allowSessionCreate: true`; by default the tool is absent from the model tool table and the system prompt states that only the user creates sessions.
+  - `executeSessionCreate` rejects with `[Forbidden]` unless explicitly enabled, so a direct caller cannot bypass the default-deny policy.
+  - `session_call` to a missing target now returns a structured `TARGET_NOT_FOUND` result whose message tells the user the session does not exist and asks them to confirm the ID, instead of surfacing a bare tool error.
+
 ### Fixed
 - **Cold-target auto-resume goes through the Host Session Controller (`lib/session-directory.mjs`)**:
   - `session_call` to a session that is not in memory now resumes it through `sessionController.resolveAgent()` instead of a bare `agents.resume({ resumeSessionId })`. The controller applies the default model, model selection, and preset composition, so the resumed Agent has `options.provider`/`options.model` and its composed tools/persona.
