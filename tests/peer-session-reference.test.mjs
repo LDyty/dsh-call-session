@@ -347,7 +347,7 @@ test('Peer Session Reference: Prioritize call-session registered sessions then b
     'session-registered-newer': { id: 'session-registered-newer', title: '已协作新任务', cwd: CURRENT_WS, status: 'idle', updatedAt: 4000 }
   };
 
-  // 注入已参与 call-session 调用的遥测快照
+  // 注入已参与 call-session 调用的连线快照
   const mockCalls = [
     { callerSessionId: 'session-curr', targetSessionId: 'session-registered-older' },
     { callerSessionId: 'session-registered-newer', targetSessionId: 'session-curr' }
