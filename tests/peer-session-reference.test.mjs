@@ -126,7 +126,7 @@ test('Peer Session Reference: Input trigger source registration and codec contra
   assert.ok(src, 'Input trigger source must be registered');
   assert.equal(src.trigger, '@', 'Trigger character must be @');
   assert.equal(src.name, 'peer-session', 'Source name must be peer-session');
-  assert.equal(src.order, 5, 'Source order must be 5');
+  assert.equal(src.order, -10, 'Source order must be -10 to ensure top priority placement over native sources');
   assert.equal(src.showGroupTitle, false, 'Group title must be hidden');
 
   assert.ok(src.codec, 'Source must provide codec');
