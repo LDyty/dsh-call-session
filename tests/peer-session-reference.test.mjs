@@ -408,11 +408,11 @@ test('Peer Session Reference: Canonical 8-character short ID badge and title dis
   // 无标题会话回退为 Agent #xxxxxxxx
   assert.equal(list[2].label, 'Agent ' + list[2].name, 'Missing title must fall back to Agent #shortId');
 
-  // 三态状态映射
-  assert.equal(list[0].description, '运行中');
-  assert.equal(list[1].description, '就绪');
-  assert.equal(list[2].description, '异常');
-  assert.equal(list[3].description, '会话已离线');
+  // 动态状态与相对更新时间排版 (Q3 A 决策)
+  assert.ok(list[0].description.startsWith('运行中 · '), 'Running session must display running status prefix with relative time');
+  assert.ok(!list[1].description.includes('就绪'), 'Idle session must remain quiet and display only relative time without 就绪');
+  assert.ok(list[2].description.startsWith('异常 · '), 'Error session must display error status prefix with relative time');
+  assert.ok(list[3].description.startsWith('会话已离线 · '), 'Offline session must display offline status prefix with relative time');
 });
 
 test('Peer Session Reference: Breadcrumb navigation, root switching, and workspace header', () => {
@@ -581,9 +581,9 @@ test('Peer Session Reference: English locale end-to-end symmetry across discover
 
   // 二级会话列表英文三态描述断言
   const l2 = await src.candidates({ sessionId: 'session-curr' }, { query: CURRENT_WS, drilled: true });
-  assert.equal(l2[0].description, 'Running');
-  assert.equal(l2[1].description, 'Idle');
-  assert.equal(l2[2].description, 'Error');
+  assert.ok(l2[0].description.startsWith('Running'), 'English session description must start with Running');
+  assert.ok(!l2[1].description.includes('Idle'), 'Idle session in English must display only relative time without Idle');
+  assert.ok(l2[2].description.startsWith('Error'), 'Error session in English must start with Error');
 });
 
 test('Peer Session Reference: Node VM sandbox resilience and boundary condition robustness', async () => {
@@ -675,4 +675,58 @@ test('Peer Session Reference: Bug Repro - filter subagents with parentSessionId 
   assert.equal(list[0].label, '优化README的 @ 功能展示...', 'First must be active collaborator 1');
   assert.equal(list[1].label, '查找开发者社区技能', 'Second must be active collaborator 2');
   assert.equal(list[2].label, 'task_report回传提醒机制', 'Third must be ordinary peer session');
+});
+
+test('Peer Session Reference: Scoped shielding of native reference sessions in Level 2 without harming Level 1 (Q1 A)', async () => {
+  const { plugin } = loadClientInSandbox();
+
+  const mockNativeRefSource = {
+    trigger: '@',
+    name: 'reference',
+    order: 0,
+    candidates: async (_session, req) => {
+      return [
+        { name: 'file-1.js', icon: 'file', section: '文件与文件夹' },
+        { name: 'Spec axis subagent', icon: 'session', section: '子智能体' },
+        { name: 'History session', icon: 'session', section: '对话' }
+      ];
+    }
+  };
+
+  const mockCtx = {
+    effect: (fn) => fn(),
+    locale: {
+      register: () => {},
+      bind: () => (key) => plugin.zh[key] || key
+    },
+    slots: {
+      inject: () => {},
+      register: () => {}
+    },
+    get: (serviceName) => {
+      if (serviceName === 'inputTriggers') {
+        return {
+          live: {
+            sources: [mockNativeRefSource]
+          },
+          registerSource: () => () => {}
+        };
+      }
+      return null;
+    }
+  };
+
+  plugin.apply(mockCtx);
+
+  // 一级菜单（!drilled）：原生引用源不受任何影响，文件与原生会话完整保留（不破坏原生）
+  const level1Items = await mockNativeRefSource.candidates({ sessionId: 's1' }, { drilled: false });
+  assert.equal(level1Items.length, 3, 'Level 1 must keep native file and session items completely untouched');
+  assert.ok(level1Items.some(it => it.icon === 'file'));
+  assert.ok(level1Items.some(it => it.icon === 'session'));
+
+  // 二级菜单（drilled）：原生引用源的会话被精准屏蔽，仅保留文件，杜绝两秒后重刷新污染
+  const level2Items = await mockNativeRefSource.candidates({ sessionId: 's1' }, { drilled: true });
+  assert.equal(level2Items.length, 1, 'Level 2 must strictly shield out native sessions');
+  assert.equal(level2Items[0].name, 'file-1.js', 'Level 2 must preserve file items');
+  assert.ok(!level2Items.some(it => it.icon === 'session'), 'Zero session items from native reference in Level 2');
 });
