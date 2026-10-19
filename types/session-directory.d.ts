@@ -48,6 +48,7 @@ export declare class SessionDirectory {
   constructor(ctx?: any, options?: { logger?: any });
 
   getAgentsService(exec?: any): any;
+  getSessionController(): any;
   getArchivedSessionIds(): Set<string>;
   isRegisteredWorkspace(workspacePath: string): boolean | null;
   resolveCwd(agent: any): string;
@@ -99,4 +100,5 @@ export interface CausalRunningParams {
 export declare function checkCausalRunning(params?: CausalRunningParams): boolean;
 export declare function checkCausalRunningFinal(params?: CausalRunningParams): boolean;
 export declare function classifyError(rawError: any): ClassifiedError;
+export declare function resolveSessionController(ctx: any): any;
 export declare function resolveNativeSessionStatus(agent: any): { status: import('./session-call.js').SessionStatus; error: ClassifiedError | any | null };
