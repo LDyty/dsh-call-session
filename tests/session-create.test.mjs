@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  executeSessionCreate,
+  executeSessionCreate as executeSessionCreateRaw,
   resolvePeerTitle,
   resetRateLimits,
   checkRateLimit,
@@ -12,7 +12,10 @@ import {
   resolvePeerPresetAndSetup,
   PEER_SESSION_CONSTANTS
 } from '../lib/session-create.mjs';
+import { withSessionCreateEnabled } from './helpers/session-create-opt-in.mjs';
 import { createMockAgent } from './helpers/mock-agent.mjs';
+
+const executeSessionCreate = withSessionCreateEnabled(executeSessionCreateRaw);
 
 
 const HEADER_REGEX = /^\[From: .+? \(.+?\) \| CallType: (task_dispatch|task_report|notice)\](\n> Context Ref: .+?)?\n\n/;

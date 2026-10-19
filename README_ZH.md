@@ -80,12 +80,12 @@ dsh plugin --profile web remove dsh-call-session
 
 当前会话调用 `board_post` 将详细评审报告写入公共黑板，取得 `postId`。其他会话按需通过 `board_list` 查阅，避免几十 KB 的大文本在会话间来回复制导致上下文爆炸。
 
-#### 会话创建
+#### 会话创建（可选）
 
 用户输入：
 > 创建会话，交接任务。
 
-当前会话调用 `session_create` 直接在当前工作区拉起长期运行的同级会话，并自动继承当前模型规格与预设。
+默认情况下会话不能创建会话：`session_create` 不会注册，系统提示会明确告知 agent 新会话只能由用户创建。只有显式设置 `allowSessionCreate: true` 的部署，才会注册该工具并允许当前会话调用 `session_create` 拉起长期运行的同级会话，并自动继承当前模型规格与预设。
 
 ---
 
@@ -94,7 +94,7 @@ dsh plugin --profile web remove dsh-call-session
 | 工具 | 类型 | 机制 | 常见场景 |
 | :--- | :--- | :--- | :--- |
 | `session_call` | Tool | 推送 | 1:1 单播呼叫，用于任务派发、进度汇报与交接通知 |
-| `session_create` | Tool | 原生 | 创建长期运行的同级会话，用于分工派生与多角色协作 |
+| `session_create` | Tool | 可选 | 创建长期运行的同级会话，用于分工派生与多角色协作；默认关闭，需 `allowSessionCreate: true` |
 | `session_query` | Tool | 只读 | 检索会话列表，查看当前工作区或跨工作区会话状态 |
 | `board_post` | Tool | 拉取 | 发布黑板条目，用于公布大文本产物与共享状态 |
 | `board_list` | Tool | 拉取 | 检索黑板记录，按需点查详情或浏览标题摘要 |
@@ -128,6 +128,7 @@ dsh plugin --profile web remove dsh-call-session
 
 配置项：
 - `enabled`：是否启用插件，默认 `true`。
+- `allowSessionCreate`：是否注册 `session_create` 并允许会话创建新会话，默认 `false`；关闭时只能由用户创建会话，`session_call` 目标不存在时返回“会话不存在”的提示。
 - `debounceMs`：黑板落盘防抖延迟毫秒数，默认 `300`。
 - `maxCapacity`：黑板条目容量硬上限，默认 `200`。
 - `telemetryCapacity`：看板调用轨迹保留条数上限，默认 `200`。

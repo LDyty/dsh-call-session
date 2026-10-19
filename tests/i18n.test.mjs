@@ -123,7 +123,7 @@ test('ADR-0023: resolveLocale 层级决议与配置穿透验证', () => {
 
 test('ADR-0023: 英文模式下 6 大原生工具 Schema 纯英文注册验证', () => {
   const { ctx, tools } = createMockHarness();
-  apply(ctx, { locale: 'en', storagePath: path.join(os.tmpdir(), 'i18n-en-schema.json'), debounceMs: 0 });
+  apply(ctx, { locale: 'en', storagePath: path.join(os.tmpdir(), 'i18n-en-schema.json'), debounceMs: 0, allowSessionCreate: true });
 
   const toolNames = ['board_post', 'board_list', 'board_clear', 'session_call', 'session_query', 'session_create'];
   for (const name of toolNames) {
@@ -142,7 +142,7 @@ test('ADR-0023: 英文模式下 6 大原生工具 Schema 纯英文注册验证',
 
 test('ADR-0023: 中文模式下 6 大原生工具 Schema 中文注册验证', () => {
   const { ctx, tools } = createMockHarness();
-  apply(ctx, { locale: 'zh', storagePath: path.join(os.tmpdir(), 'i18n-zh-schema.json'), debounceMs: 0 });
+  apply(ctx, { locale: 'zh', storagePath: path.join(os.tmpdir(), 'i18n-zh-schema.json'), debounceMs: 0, allowSessionCreate: true });
 
   const toolNames = ['board_post', 'board_list', 'board_clear', 'session_call', 'session_query', 'session_create'];
   for (const name of toolNames) {
@@ -154,7 +154,7 @@ test('ADR-0023: 中文模式下 6 大原生工具 Schema 中文注册验证', ()
 test('ADR-0023: System Prompt 与黑板提醒动态求值时序与语言自适应验证', () => {
   const { ctx, promptSections, settingsStore } = createMockHarness();
   settingsStore.set('locale', { preference: 'zh' });
-  apply(ctx, { locale: 'auto', storagePath: path.join(os.tmpdir(), 'i18n-auto-prompt.json'), debounceMs: 0 });
+  apply(ctx, { locale: 'auto', storagePath: path.join(os.tmpdir(), 'i18n-auto-prompt.json'), debounceMs: 0, allowSessionCreate: true });
 
   const usageGetter = promptSections.get('dsh-call-session:usage').getter;
   assert.ok(usageGetter, '必须注册 System Prompt usage getter');

@@ -411,9 +411,9 @@ test('buildToolDefinitions: 支持显式注入 boardToolsAdapter 且直接执行
     }
   };
   registerNativeTools(mockCtx, { boardToolsAdapter: adapter });
-  assert.equal(registered.length, 6);
+  assert.equal(registered.length, 5);
   assert.ok(registered.some(t => t.name === 'board_post'));
-  assert.ok(registered.some(t => t.name === 'session_create'));
+  assert.ok(!registered.some(t => t.name === 'session_create'), '默认策略不得注册 session_create');
 
   await store.close();
   await fs.rm(tmpDir, { recursive: true, force: true });

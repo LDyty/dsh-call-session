@@ -135,6 +135,8 @@ export declare const DISPATCHER_CONSTANTS: Readonly<{
 export interface CallSessionConfig {
   /** 是否启用跨会话通信与公共黑板插件，默认 true */
   enabled?: boolean;
+  /** 是否允许会话通过 session_create 创建新会话，默认 false（所有会话一律禁止） */
+  allowSessionCreate?: boolean;
   /** 黑板持久化文件存储路径，默认指向插件根目录下 board.json */
   storagePath?: string;
   /** 黑板数据持久化防抖延迟，单位毫秒，默认 300 */

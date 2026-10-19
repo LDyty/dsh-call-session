@@ -13,6 +13,7 @@ const {
   DISPATCHER_CONSTANTS,
   apply
 } = pluginExports;
+import { executeSessionCreate as executeSessionCreateRaw } from '../lib/session-create.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -172,22 +173,68 @@ test('Plugin 基础元数据与配置导出规范', async () => {
   }
 });
 
-test('usageSectionText: 规范 System Prompt 段落结构与说明', () => {
+test('usageSectionText: 默认禁止创建会话，并提示目标不存在', () => {
   const text = usageSectionText(null, { locale: 'zh' });
   assert.ok(text.includes('## 会话协作') || text.includes('## Cross-Session Communication & Collaboration'));
   assert.ok(text.includes('session_query'));
   assert.ok(text.includes('session_call'));
-  assert.ok(text.includes('session_create'));
+  assert.equal(text.includes('session_create'), false, '默认不得引导模型使用 session_create');
   assert.ok(text.includes('board_post'));
   assert.ok(text.includes('board_list'));
   assert.ok(text.includes('board_clear'));
   assert.equal(text.includes('/dsh-call-session'), false);
-  assert.ok(text.includes('意图分流规则') || text.includes('Intent routing (session_create vs subagent):'));
+  assert.equal(text.includes('意图分流规则'), false, '默认不得出现 session_create 分流段');
+  assert.ok(text.includes('新会话只能由用户创建'));
+  assert.ok(text.includes('目标不存在'));
+  assert.ok(text.includes('会话不存在'));
+  assert.ok(text.includes('subagent'));
+});
+
+test('usageSectionText: allowSessionCreate=true 恢复创建会话引导', () => {
+  const text = usageSectionText(null, { locale: 'zh', allowSessionCreate: true });
+  assert.ok(text.includes('session_create'));
+  assert.ok(text.includes('意图分流规则'));
   assert.ok(text.includes('创建同级会话'));
   assert.ok(text.includes('新建会话'));
   assert.ok(text.includes('新开 session'));
   assert.ok(text.includes('平级会话'));
   assert.ok(text.includes('subagent'));
+});
+
+test('默认策略：只有用户创建会话，目标不存在时返回明确提示', async (t) => {
+  const tmpDir = await createTempDir();
+  t.after(async () => {
+    await fs.rm(tmpDir, { recursive: true, force: true });
+  });
+
+  const ctx = createMockCordisContext();
+  apply(ctx, { storagePath: path.join(tmpDir, 'board.json'), debounceMs: 0, locale: 'zh' });
+
+  assert.equal(ctx.tools.get('session_create'), undefined, '默认不得注册 session_create');
+
+  const usage = ctx.systemPrompt.get('dsh-call-session:usage').getter();
+  assert.equal(usage.includes('session_create'), false, '默认提示词不得引导使用 session_create');
+  assert.ok(usage.includes('新会话只能由用户创建'));
+  assert.ok(usage.includes('目标不存在'));
+
+  await assert.rejects(
+    () => executeSessionCreateRaw({ ctx, args: { title: 'Should Not Exist' }, exec: {} }),
+    /\[Forbidden\]/
+  );
+
+  const caller = {
+    id: 'session-caller-0001',
+    session: { id: 'session-caller-0001', cwd: process.cwd() },
+    options: { provider: 'test-provider', model: 'test-model' }
+  };
+  const result = await ctx.tools.get('session_call').execute(
+    { target_session_id: 'session-missing-9999', message: 'ping' },
+    { agent: caller }
+  );
+  assert.equal(result.success, false);
+  assert.equal(result.error.code, 'TARGET_NOT_FOUND');
+  assert.ok(result.message.includes('不存在'));
+  assert.ok(result.message.includes('session-missing-9999'));
 });
 
 test('apply: 插件初始化、工具注册与 System Prompt 挂载', async (t) => {
@@ -204,7 +251,8 @@ test('apply: 插件初始化、工具注册与 System Prompt 挂载', async (t) 
     debounceMs: 50,
     maxCapacity: 100,
     promptSectionOrder: 120,
-    locale: 'zh'
+    locale: 'zh',
+    allowSessionCreate: true
   });
 
   // 1. 验证 6 大核心工具是否全部成功注册
@@ -321,7 +369,7 @@ test('六大原生工具集成执行链路 (execute 端到端测试)', async (t)
 
   const ctx = createMockCordisContext();
   const storagePath = path.join(tmpDir, 'board.json');
-  apply(ctx, { storagePath, debounceMs: 50 });
+  apply(ctx, { storagePath, debounceMs: 50, allowSessionCreate: true });
 
   const caller = {
     id: 'lead-session-8888',

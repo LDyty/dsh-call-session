@@ -87,6 +87,7 @@ try {
  */
 export const Config = zInstance ? zInstance.object({
   enabled: zInstance.boolean().default(true).description('是否启用跨会话通信与公共黑板插件'),
+  allowSessionCreate: zInstance.boolean().default(false).description('是否允许会话通过 session_create 创建新会话；默认 false，所有会话一律禁止'),
   storagePath: zInstance.string().description('黑板持久化存储文件路径'),
   debounceMs: zInstance.natural().default(300).description('黑板数据持久化防抖延迟毫秒数'),
   maxCapacity: zInstance.natural().min(10).max(10000).default(200).description('公共黑板保留条目上限，按 FIFO 淘汰'),
@@ -96,6 +97,7 @@ export const Config = zInstance ? zInstance.object({
   locale: zInstance.union(['auto', 'zh', 'en']).default('auto').description('插件交互语言偏好')
 }) : Object.freeze({
   enabled: true,
+  allowSessionCreate: false,
   debounceMs: 300,
   maxCapacity: 200,
   telemetryCapacity: 200,
@@ -114,7 +116,7 @@ export const Config = zInstance ? zInstance.object({
 export function usageSectionText(ctx, config) {
   const currentLocale = resolveLocale(ctx, config);
   const catalog = getCatalog(currentLocale);
-  return catalog.prompts.usageSection();
+  return catalog.prompts.usageSection({ allowSessionCreate: config?.allowSessionCreate === true });
 }
 
 export const DISPATCHER_CONSTANTS = Object.freeze({
