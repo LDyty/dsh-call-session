@@ -68,10 +68,11 @@
 
 ### 看板
 
-全局拓扑视图、通道分流走线、Gutter 通道与圆角矩形卡片规范。
+全局拓扑视图、通道分流走线、Gutter 通道、输入触发两级钻取与圆角矩形卡片规范。
 
 | ID | Title | Status | Date | Primary Anchors | Document |
 | :--- | :--- | :--- | :--- | :--- | :--- |
+| **ADR-0034** | Two-Level Drill-Down Peer Session Discovery and Pure Slice Reference Contract | **Accepted** - Current | 2026-10-19 | `lib/client.js` | [0034-two-level-drill-down-peer-session-discovery-and-pure-slice-reference.md](./0034-two-level-drill-down-peer-session-discovery-and-pure-slice-reference.md) |
 | **ADR-0026** | Canvas Rounded Rectangle Cards, Toolbar Streamlining, and Dual Lineage Modes | **Accepted** - Current | 2026-10-08 | `lib/client.js`, `types/client.d.ts` | [0026-canvas-rounded-rect-cards-toolbar-streamlining-and-dual-lineage-modes.md](./0026-canvas-rounded-rect-cards-toolbar-streamlining-and-dual-lineage-modes.md) |
 | **ADR-0019** | Channel-Split Routing, Lineage On-Demand Focus, and Port Non-Interference Geometry | **Accepted** - Current | 2026-09-17 | `lib/client.js` | [0019-channel-split-routing-and-lineage-on-demand-focus.md](./0019-channel-split-routing-and-lineage-on-demand-focus.md) |
 | **ADR-0018** | Canvas Motion Token, Geometric Invariant, and Visual Restraint Specification | **Accepted** - Current | 2026-09-17 | `lib/client.js` | [0018-canvas-motion-and-visual-restraint.md](./0018-canvas-motion-and-visual-restraint.md) |

@@ -47,7 +47,7 @@
 - **Cons**: 维护两套通信链路，增加代码冗余与网络维护成本。
 
 ### Option 2 (Chosen): Eliminate Standalone CLI and Unify on Native Slash Command `/dsh-call-session`
-- **Description**: 废除 `bin` 脚本，使用 DSH 原生 `ctx.commands.register` 注册全局斜杠命令，打通 Web 输入框与进程内调度。
+- **Description**: 废除 `bin` 脚本，使用 DSH 原生 `ctx.commands.register` 注册全局斜杠命令，接通 Web 输入框与进程内调度。
 - **Pros**: 进程内单链路自包含执行，消除外部进程开销与网络依赖。
 - **Cons**: 外部脚本无法直接通过系统 PATH 调用 `dsh-call-session`，需通过 DSH 原生接口或工具调用。
 
@@ -139,7 +139,7 @@ ctx.commands.register({
 ### 6.1 Automated Verification Suite
 - **Package 清理检查**：测试断言 `package.json` 中 `bin` 字段为 `undefined`；
 - **命令注册与解析测试**：模拟调用 Slash Command 注册器，传入正常与缺损参数，验证参数解析与错误提示响应；
-- **端到端执行测试**：验证 `/dsh-call-session` 触发后直接调用进程内 `executeSessionCall`。
+- **全流程执行测试**：验证 `/dsh-call-session` 触发后直接调用进程内 `executeSessionCall`。
 
 ### 6.2 Review Checklist
 - [ ] 清理 `package.json` 中的 `bin` 声明；

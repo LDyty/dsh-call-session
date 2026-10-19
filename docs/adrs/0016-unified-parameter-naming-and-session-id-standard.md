@@ -48,7 +48,7 @@
 ## 2. Decision Drivers
 
 - **Driver 1 (Eliminate Interface Ambiguity)**：确立明确的命名法则，消除 Agent 在选择工具参数时的猜测与幻觉。
-- **Driver 2 (Preserve Web GUI & Machine Runtime)**：维护 ADR-0005 确立的 Machine Layer camelCase JSON Schema 铁律，保护前端协作看板（Canvas）与看板数据管道的绝对稳定。
+- **Driver 2 (Preserve Web GUI & Machine Runtime)**：维护 ADR-0005 确立的 Machine Layer camelCase JSON Schema 规范，保护前端协作看板（Canvas）与看板数据管道的绝对稳定。
 - **Driver 3 (Purge Alias Pollution)**：在运行时代码与 `.d.ts` 中移除所有冗余兼容别名（如 `active_only`, `reasoningEffort`, `agentPreset` 等），保持接口简洁。
 - **Driver 4 (Rectify Historical ADR Inconsistencies)**：出具正式修正案，纠正 ADR-0001, ADR-0005, ADR-0006, ADR-0010, ADR-0011, ADR-0015 中与现行统一规范相悖的历史笔误与模糊描述。
 
@@ -56,14 +56,14 @@
 
 ## 3. Considered Options
 
-### Option 1: 全链路全面蛇形化（All-Snake_Case Unification）
+### Option 1: 全流程蛇形化（All-Snake_Case Unification）
 - **描述**：将工具入参和出参全部强制统一为 `snake_case`（例如出参全部转为 `session_id`, `target_session_id`, `total_count` 等）。
 - **否决原因**：
   - 严重违背 ADR-0005《English Metadata and Normalized Two-State Status Protocol》核心决策；
   - 破坏协作看板（`lib/client.js`）中数百处基于 `sessionId`、`targetSessionId`、`callerSessionId` 的响应式属性访问，引发前端异常与渲染失败；
   - 违反主流 TypeScript / JSON 领域开发惯例（JS 运行时对象原生偏好 camelCase）。
 
-### Option 2: 全链路全面驼峰化（All-CamelCase Unification）
+### Option 2: 全流程驼峰化（All-CamelCase Unification）
 - **描述**：将工具入参和出参全部强制统一为 `camelCase`（例如入参变为 `targetSessionId`, `initialMessage`, `runningOnly` 等）。
 - **否决原因**：
   - 违背 DSH 原生 Tool 体系普遍遵循的 POSIX / Pythonic `snake_case` 入参设计规范；
@@ -83,13 +83,13 @@
   4. **清理兼容别名**：生产代码和类型定义中剔除兼容别名。
 - **采纳优势**：
   - 契合 DSH 工具生态的入参惯例与 JS/TS/Web 前端的出参惯例；
-  - 零别名、零额外 Token 损耗、100% 类型安全与全链路参数对称。
+  - 零别名、零额外 Token 损耗、100% 类型安全与全流程参数对称。
 
 ---
 
 ## 4. Decision Outcome
 
-**Chosen Decision**: 采纳 Option 4，确立全链路正交命名技术规范。
+**Chosen Decision**: 采纳 Option 4，确立全流程正交命名技术规范。
 
 ### 4.1 核心架构不变式（Architectural Invariants）
 
@@ -302,7 +302,7 @@
    - 宣告废止代码层对 `topicPrefix`、`crossWorkspace`、`titlesOnly` 的冗余别名读取。
 
 6. **ADR-0015 修正案**：
-   - §2.1 & §2.2 契约修正：明确工具入参命名严格对齐 `args.reasoning_effort` 与 `args.preset`；
+   - §2.1 & §2.2 契约修正：明确工具入参命名严格与 `args.reasoning_effort`、`args.preset` 保持一致；
    - 废止 `reasoningEffort` 与 `agentPreset` 在入参层面的双轨别名。
 
 ---
@@ -310,7 +310,7 @@
 ## 6. Consequences
 
 ### 6.1 Positive Consequences (Benefits)
-- **消除全链路认知负荷**：所有工具入参统一为 `snake_case`，出参统一为 `camelCase`，规则简明确定，无特例，无割裂。
+- **消除全流程认知负荷**：所有工具入参统一为 `snake_case`，出参统一为 `camelCase`，规则简明确定，无特例，无割裂。
 - **清理冗余兼容代码**：移除所有双轨别名读取，消除潜在分支漏洞，提升 TypeScript 类型安全与编译期确定性。
 - **保护前端与看板数据系统**：明确固化 `sessionId`、`targetSessionId`、`callerSessionId` 出参，协作看板与看板数据管道稳定兼容。
 - **参数链路对称流转**：从会话发现到单播呼叫，再到黑板引用，参数命名对称一致。

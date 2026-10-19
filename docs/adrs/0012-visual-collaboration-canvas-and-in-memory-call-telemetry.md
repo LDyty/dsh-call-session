@@ -274,7 +274,7 @@ ctx.slots.inject('conversation.view', () => ctx.slots.register({
    - 在有 3 个处于 idle 状态的会话时，连续调用 100 次 `getCanvasTelemetry()`，验证 3 个会话的被动唤醒次数为 0。
 3. **KV Cache 验证**：
    - 检查 Agent `tools` 列表与 System Prompt，确认无新增 LLM 遥测工具，保证提示词指纹幂等。
-4. **端到端链路验证**：
+4. **全流程验证**：
    - 断言前端请求路径与宿主注册路径字符串完全一致，防止链路断裂；
    - 验证认证围栏在 Connection 缺失（503）、未授权（401）、越权（403）三态下均在处理器执行前拦截；
    - 验证非 GET 方法一律 405 拦截，响应头携带 `allow: GET`；
