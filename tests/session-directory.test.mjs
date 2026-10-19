@@ -4,13 +4,15 @@ import { SessionDirectory, executeSessionQuery, resolveNativeSessionStatus } fro
 import { createMockAgent } from './helpers/mock-agent.mjs';
 import { normalizeWorkspace } from '../lib/board-store.mjs';
 
-function createMockCordis(liveAgents = [], archivedIds = []) {
+function createMockCordis(liveAgents = [], archivedIds = [], options = {}) {
   const archivedSet = new Set(archivedIds);
+  const bareResumeCalls = options.bareResumeCalls;
   return {
     agents: {
       list: () => liveAgents,
       get: (id) => liveAgents.find(a => a.id === id) || null,
       resume: async ({ resumeSessionId }) => {
+        if (Array.isArray(bareResumeCalls)) bareResumeCalls.push(resumeSessionId);
         const found = liveAgents.find(a => a.id === resumeSessionId);
         return found ? { agent: found } : null;
       }
@@ -21,6 +23,7 @@ function createMockCordis(liveAgents = [], archivedIds = []) {
     get(name) {
       if (name === 'agents') return this.agents;
       if (name === 'workspaceRegistry') return this.workspaceRegistry;
+      if (name === 'sessionController') return options.sessionController;
       return null;
     }
   };
@@ -191,6 +194,69 @@ test('SessionDirectory: resolveTarget with exact match, prefix match, and guards
   // 未找到目标会话
   await assert.rejects(
     () => dir.resolveTarget('session-00000000', { callerSessionId: 'caller-1' }),
+    /\[TargetNotFound\]/
+  );
+});
+
+test('SessionDirectory: 冷会话恢复经 sessionController.resolveAgent 组合，禁止裸 agents.resume', async () => {
+  const cold = createMockAgent({ id: 'session-c0ffee00-1111', title: 'Cold', cwd: '/repo' });
+  const bareResumeCalls = [];
+  const resolvedIds = [];
+  const ctx = createMockCordis([], [], {
+    bareResumeCalls,
+    sessionController: {
+      resolveAgent: async (id) => {
+        resolvedIds.push(id);
+        return id === cold.id ? { agent: cold } : { error: { code: 'session/not-found' } };
+      }
+    }
+  });
+  const dir = new SessionDirectory(ctx);
+
+  const result = await dir.resolveTarget(cold.id, { callerSessionId: 'caller-1' });
+  assert.equal(result.targetAgent.id, cold.id);
+  assert.deepEqual(resolvedIds, [cold.id]);
+  assert.deepEqual(bareResumeCalls, [], '自动恢复不得绕过 sessionController 调用裸 agents.resume');
+});
+
+test('SessionDirectory: 缺少 sessionController 时不退回裸 agents.resume', async () => {
+  const cold = createMockAgent({ id: 'session-c0ffee00-2222', title: 'Cold', cwd: '/repo' });
+  const bareResumeCalls = [];
+  const ctx = createMockCordis([], [], { bareResumeCalls });
+  const dir = new SessionDirectory(ctx);
+
+  await assert.rejects(
+    () => dir.resolveTarget(cold.id, { callerSessionId: 'caller-1' }),
+    /\[TargetNotFound\]/
+  );
+  assert.deepEqual(bareResumeCalls, [], '缺少 sessionController 时不得退回裸 agents.resume');
+});
+
+test('SessionDirectory: sessionController 拒绝恢复时按未找到处理', async () => {
+  const ctx = createMockCordis([], [], {
+    sessionController: {
+      resolveAgent: async () => ({ error: { code: 'session/writer-held' } })
+    }
+  });
+  const dir = new SessionDirectory(ctx);
+
+  await assert.rejects(
+    () => dir.resolveTarget('session-c0ffee00-3333', { callerSessionId: 'caller-1' }),
+    /\[TargetNotFound\]/
+  );
+});
+
+test('SessionDirectory: sessionController 恢复出的已归档会话仍被拒绝', async () => {
+  const stale = createMockAgent({ id: 'session-c0ffee00-4444', cwd: '/repo' });
+  const ctx = createMockCordis([], [stale.id], {
+    sessionController: {
+      resolveAgent: async () => ({ agent: stale })
+    }
+  });
+  const dir = new SessionDirectory(ctx);
+
+  await assert.rejects(
+    () => dir.resolveTarget(stale.id, { callerSessionId: 'caller-1' }),
     /\[TargetNotFound\]/
   );
 });

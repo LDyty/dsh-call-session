@@ -48,6 +48,7 @@ export declare class SessionDirectory {
   constructor(ctx?: any, options?: { logger?: any });
 
   getAgentsService(exec?: any): any;
+  getSessionController(): any;
   getArchivedSessionIds(): Set<string>;
   resolveCwd(agent: any): string;
   resolveWorkspace(agent: any): string;
@@ -74,4 +75,5 @@ export declare function getArchivedSessionIds(ctx: any): Set<string>;
 export declare function resolveSessionCwd(agent: any): string;
 export declare function resolveSessionTitle(ctx: any, agent: any): string;
 export declare function resolveAgentsService(ctx: any, exec?: any): any;
+export declare function resolveSessionController(ctx: any): any;
 export declare function resolveNativeSessionStatus(agent: any): { status: import('./session-call.js').SessionStatus; error: any | null };

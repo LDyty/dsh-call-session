@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- **Cold-target auto-resume goes through the Host Session Controller (`lib/session-directory.mjs`)**:
+  - `session_call` to a session that is not in memory now resumes it through `sessionController.resolveAgent()` instead of a bare `agents.resume({ resumeSessionId })`. The controller applies the default model, model selection, and preset composition, so the resumed Agent has `options.provider`/`options.model` and its composed tools/persona.
+  - The previous bare resume produced an Agent with empty options; the first prompt assembly then failed with `prompt variable "{{model}}" has no value for this assembly (section "deployment:persona-prefix")` because the deployment persona template references `{{model}}` (observed 2026-10-19 in the tech-lead session after a host restart).
+  - Hosts without `sessionController.resolveAgent` no longer fall back to the bare resume path; the target is reported as `[TargetNotFound]` instead of publishing a broken Agent. The same filter still rejects self, archived, and subagent-owned targets after resume.
+
 ## [0.1.8] - 2026-10-18
 
 ### Summary
