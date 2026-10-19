@@ -627,3 +627,52 @@ test('Peer Session Reference: Node VM sandbox resilience and boundary condition 
   const l2Malformed = await srcMalformed.candidates({ sessionId: 'valid-curr' }, { query: CURRENT_WS, drilled: true });
   assert.ok(l2Malformed.length >= 1);
 });
+
+test('Peer Session Reference: Bug Repro - filter subagents with parentSessionId and review task titles', async () => {
+  const { plugin } = loadClientInSandbox();
+
+  const sessionsById = {
+    'session-curr': { id: 'session-curr', title: '分析dsh 同级会话功能', cwd: CURRENT_WS, status: 'running', updatedAt: 99999 },
+    // 真实子智能体样本（真实宿主中只有 parentSessionId，无 origin 或无子代理关键字）
+    'sub-1': { id: 'sub-1', title: 'Spec axis re-review for HEAD vs main', cwd: CURRENT_WS, parentSessionId: 'session-curr', updatedAt: 10000 },
+    'sub-2': { id: 'sub-2', title: 'Standards axis re-review for HEAD vs main', cwd: CURRENT_WS, parentSessionId: 'session-curr', updatedAt: 10000 },
+    'sub-3': { id: 'sub-3', title: 'agent-teams:peer-session-mention:docs-auditor', cwd: CURRENT_WS, parentSessionId: 'session-curr', updatedAt: 9000 },
+    'sub-4': { id: 'sub-4', title: 'Implement Ticket 01: Peer session discovery', cwd: CURRENT_WS, parentSessionId: 'session-curr', updatedAt: 8000 },
+    // 真实同级协作根会话（无 parentSessionId，在 callTelemetry 中有协作记录）
+    'peer-active-1': { id: 'peer-active-1', title: '优化README的 @ 功能展示...', cwd: CURRENT_WS, status: 'running', updatedAt: 50000 },
+    'peer-active-2': { id: 'peer-active-2', title: '查找开发者社区技能', cwd: CURRENT_WS, status: 'idle', updatedAt: 40000 },
+    // 真实同级普通根会话
+    'peer-normal-1': { id: 'peer-normal-1', title: 'task_report回传提醒机制', cwd: CURRENT_WS, status: 'idle', updatedAt: 20000 }
+  };
+
+  const mockCalls = [
+    { callerSessionId: 'session-curr', targetSessionId: 'peer-active-1' },
+    { callerSessionId: 'peer-active-2', targetSessionId: 'session-curr' }
+  ];
+
+  const { getRegisteredSource } = setupMockContext(plugin, {
+    sessionsById,
+    initialActiveCalls: 1,
+    recordedCalls: mockCalls
+  });
+  const src = getRegisteredSource();
+
+  const list = await src.candidates(
+    { sessionId: 'session-curr' },
+    { query: CURRENT_WS, drilled: true }
+  );
+
+  // 1. 严格断言所有子代理任务已被 100% 过滤
+  assert.ok(!list.some(item => item.label.includes('Spec axis')), 'Spec axis subagent must be filtered out');
+  assert.ok(!list.some(item => item.label.includes('Standards axis')), 'Standards axis subagent must be filtered out');
+  assert.ok(!list.some(item => item.label.includes('agent-teams:')), 'agent-teams task must be filtered out');
+  assert.ok(!list.some(item => item.label.includes('Implement Ticket')), 'Implement ticket subagent must be filtered out');
+
+  // 2. 严格断言同级会话数量
+  assert.equal(list.length, 3, 'Must only contain the 3 root peer sessions');
+
+  // 3. 严格断言排序：call-session 协作会话排在第一优先，且组内按时间倒序
+  assert.equal(list[0].label, '优化README的 @ 功能展示...', 'First must be active collaborator 1');
+  assert.equal(list[1].label, '查找开发者社区技能', 'Second must be active collaborator 2');
+  assert.equal(list[2].label, 'task_report回传提醒机制', 'Third must be ordinary peer session');
+});
