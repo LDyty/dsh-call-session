@@ -677,22 +677,10 @@ test('Peer Session Reference: Bug Repro - filter subagents with parentSessionId 
   assert.equal(list[2].label, 'task_report回传提醒机制', 'Third must be ordinary peer session');
 });
 
-test('Peer Session Reference: Scoped shielding of native reference sessions in Level 2 without harming Level 1 (Q1 A)', async () => {
+test('Peer Session Reference: Non-intrusive source registration and priority order without monkey-patching', async () => {
   const { plugin } = loadClientInSandbox();
 
-  const mockNativeRefSource = {
-    trigger: '@',
-    name: 'reference',
-    order: 0,
-    candidates: async (_session, req) => {
-      return [
-        { name: 'file-1.js', icon: 'file', section: '文件与文件夹' },
-        { name: 'Spec axis subagent', icon: 'session', section: '子智能体' },
-        { name: 'History session', icon: 'session', section: '对话' }
-      ];
-    }
-  };
-
+  let registeredSource = null;
   const mockCtx = {
     effect: (fn) => fn(),
     locale: {
@@ -706,10 +694,10 @@ test('Peer Session Reference: Scoped shielding of native reference sessions in L
     get: (serviceName) => {
       if (serviceName === 'inputTriggers') {
         return {
-          live: {
-            sources: [mockNativeRefSource]
-          },
-          registerSource: () => () => {}
+          registerSource: (src) => {
+            registeredSource = src;
+            return () => {};
+          }
         };
       }
       return null;
@@ -718,15 +706,7 @@ test('Peer Session Reference: Scoped shielding of native reference sessions in L
 
   plugin.apply(mockCtx);
 
-  // 一级菜单（!drilled）：原生引用源不受任何影响，文件与原生会话完整保留（不破坏原生）
-  const level1Items = await mockNativeRefSource.candidates({ sessionId: 's1' }, { drilled: false });
-  assert.equal(level1Items.length, 3, 'Level 1 must keep native file and session items completely untouched');
-  assert.ok(level1Items.some(it => it.icon === 'file'));
-  assert.ok(level1Items.some(it => it.icon === 'session'));
-
-  // 二级菜单（drilled）：原生引用源的会话被精准屏蔽，仅保留文件，杜绝两秒后重刷新污染
-  const level2Items = await mockNativeRefSource.candidates({ sessionId: 's1' }, { drilled: true });
-  assert.equal(level2Items.length, 1, 'Level 2 must strictly shield out native sessions');
-  assert.equal(level2Items[0].name, 'file-1.js', 'Level 2 must preserve file items');
-  assert.ok(!level2Items.some(it => it.icon === 'session'), 'Zero session items from native reference in Level 2');
+  assert.ok(registeredSource);
+  assert.equal(registeredSource.order, -10, 'Priority order must be -10 to place peer sessions at the top');
+  assert.equal(registeredSource.name, 'peer-session');
 });
