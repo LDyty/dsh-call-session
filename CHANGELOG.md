@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
+- **Documented the goal-free teaming requirement (`README.md`, `README_ZH.md`, `CONTEXT.md`)**:
+  - Cross-session team sessions must not retain an active goal. Goal continuation can inject a new turn into an idle session waiting for a peer, breaking wait-and-handoff semantics.
 - **Sessions no longer create sessions by default (`allowSessionCreate`, default `false`)**:
   - `session_create` is only registered when `allowSessionCreate: true`; by default the tool is absent from the model tool table and the system prompt states that only the user creates sessions.
   - `executeSessionCreate` rejects with `[Forbidden]` unless explicitly enabled, so a direct caller cannot bypass the default-deny policy.
