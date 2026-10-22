@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { SessionDirectory, executeSessionQuery, resolveNativeSessionStatus, classifyError } from '../lib/session-directory.mjs';
+import { SessionDirectory, executeSessionQuery, resolveNativeSessionStatus, classifyError, resolveWorkspaceRegistry } from '../lib/session-directory.mjs';
 import { createMockAgent } from './helpers/mock-agent.mjs';
 import { normalizeWorkspace } from '../lib/board-store.mjs';
 
@@ -598,4 +598,20 @@ test('resolveNativeSessionStatus 与 classifyError: 解析提示词模板装配�
   assert.equal(resDirect.status, 'error');
   assert.equal(resDirect.error.category, 'ASSEMBLY');
   assert.equal(resDirect.error.code, 'ASSEMBLY_FAIL');
+});
+
+test('resolveWorkspaceRegistry: 未注入时按可选服务读取，不阻断插件启动', () => {
+  const calls = [];
+  const ctx = {
+    get(name, optional) {
+      calls.push([name, optional]);
+      if (optional !== false) {
+        throw new Error('cannot get property "workspaceRegistry" without inject');
+      }
+      return undefined;
+    }
+  };
+
+  assert.equal(resolveWorkspaceRegistry(ctx), undefined);
+  assert.deepEqual(calls, [['workspaceRegistry', false]]);
 });
