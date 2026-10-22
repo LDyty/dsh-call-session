@@ -75,6 +75,12 @@ dsh plugin --profile web remove dsh-call-session
 
 ---
 
+## Requirement
+
+Before forming a cross-session team, remove or complete active goals in every participating session, or use a preset that does not register goal tools. Goal continuation rounds can inject a new turn into an idle session that is waiting for a peer, breaking wait-and-handoff semantics.
+
+---
+
 ## Scenarios
 
 Instruct the agent using plain natural language in the chat; the agent invokes the tools automatically:
