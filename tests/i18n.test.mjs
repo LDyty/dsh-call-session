@@ -138,6 +138,9 @@ test('ADR-0023: 英文模式下 6 大原生工具 Schema 纯英文注册验证',
       }
     }
   }
+  const callEn = tools.get('session_call');
+  assert.ok(callEn.description.includes('NOT returned to the sender'));
+  assert.ok(callEn.parameters.properties.call_type.description.includes('local final answer is NOT a reply'));
 });
 
 test('ADR-0023: 中文模式下 6 大原生工具 Schema 中文注册验证', () => {
@@ -149,6 +152,9 @@ test('ADR-0023: 中文模式下 6 大原生工具 Schema 中文注册验证', ()
     const def = tools.get(name);
     assert.ok(/[\u4e00-\u9fa5]/.test(def.description), `${name} description 必须包含中文`);
   }
+  const callZh = tools.get('session_call');
+  assert.ok(callZh.description.includes('不会回传给发送方'));
+  assert.ok(callZh.parameters.properties.call_type.description.includes('本地最终答复不代表回复发送方'));
 });
 
 test('ADR-0023: System Prompt 与黑板提醒动态求值时序与语言自适应验证', () => {

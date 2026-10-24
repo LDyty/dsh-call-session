@@ -188,6 +188,14 @@ test('usageSectionText: 默认禁止创建会话，并提示目标不存在', ()
   assert.ok(text.includes('目标不存在'));
   assert.ok(text.includes('会话不存在'));
   assert.ok(text.includes('subagent'));
+  assert.ok(text.includes('回复边界'));
+  assert.ok(text.includes('普通最终回复只留在自己的会话'));
+  assert.ok(text.includes('直接结束回合写最终答复不算回复发送方'));
+
+  const enText = usageSectionText(null, { locale: 'en' });
+  assert.ok(enText.includes('Reply boundary'));
+  assert.ok(enText.includes('ordinary final assistant message stays in its own session'));
+  assert.ok(enText.includes('ending the turn with a normal answer is not a reply'));
 });
 
 test('usageSectionText: allowSessionCreate=true 恢复创建会话引导', () => {
