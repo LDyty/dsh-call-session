@@ -69,11 +69,32 @@ test('NativeMessageTransport - 标准 DSH UserMessage 原子装配与摘要截�
 
   assert.ok(typeof noticeMsg.id === 'string' && noticeMsg.id.length > 0);
   assert.equal(noticeMsg.role, 'user');
-  assert.equal(noticeMsg.content.length, 1);
+  assert.equal(noticeMsg.content.length, 2);
   assert.equal(noticeMsg.content[0].type, 'text');
+  assert.match(noticeMsg.content[1].text, /Reply boundary/);
+  assert.match(noticeMsg.content[1].text, /task_report/);
+  assert.match(noticeMsg.content[1].text, /"session-master"/);
   assert.equal(noticeMsg.source.kind, 'plugin:dsh-call-session');
   assert.equal(noticeMsg.source.form, 'notice');
   assert.equal(noticeMsg.source.summary, '[Cross-Session TASK_DISPATCH] from Leader: Execute step A immediately');
+
+  const reportMsg = buildNativeUserMessage({
+    rawMessage: 'Task result',
+    form: 'notice',
+    callerSessionId: 'session-master',
+    callerTitle: 'Leader',
+    callType: 'task_report'
+  });
+  assert.equal(reportMsg.content.length, 1);
+
+  const pureNoticeMsg = buildNativeUserMessage({
+    rawMessage: 'Status update',
+    form: 'notice',
+    callerSessionId: 'session-master',
+    callerTitle: 'Leader',
+    callType: 'notice'
+  });
+  assert.equal(pureNoticeMsg.content.length, 1);
 
   // 2. form: 'session_create' 同级会话初始消息
   const bootstrapMsg = buildNativeUserMessage({
@@ -85,6 +106,7 @@ test('NativeMessageTransport - 标准 DSH UserMessage 原子装配与摘要截�
   });
   assert.equal(bootstrapMsg.source.form, 'session_create');
   assert.equal(bootstrapMsg.source.summary, '[Peer Session Bootstrap] from Creator: Hello new peer worker');
+  assert.equal(bootstrapMsg.content.length, 1);
   assert.equal(
     bootstrapMsg.content[0].text,
     '[From: session-creator-999 (Creator) | CallType: task_dispatch]\n> Context Ref: #post-root\n\nHello new peer worker'
